@@ -68,9 +68,9 @@ export interface Auth {
 }
 
 function parseWoffuDate(dateString: string): Date {
-    const stripped = dateString.split("T")[0];
-    assert(stripped);
-    return new Date(stripped);
+  const stripped = dateString.split("T")[0];
+  assert(stripped);
+  return new Date(stripped);
 }
 
 export const RequestsResponse = z.object({
@@ -116,40 +116,58 @@ const HolidaysResponse = z.object({
 });
 
 export async function fetchWoffuHolidays(auth: Auth, company: Company) {
-    const response = await fetch(
-        `https://${company.name}.woffu.com/api/users/calendar-events/next`,
-        {
-            method: "GET",
-            headers: {
-                ...auth.headers,
-            },
-        }
-    );
-
-    if (!response.ok) {
-        throw new Error(`Failed to fetch holidays: ${response.statusText}`);
+  const response = await fetch(
+    `https://${company.name}.woffu.com/api/users/calendar-events/next`,
+    {
+      method: "GET",
+      headers: {
+        ...auth.headers,
+      },
     }
+  );
 
-    const data = await response.json();
-    const parsed = z.array(HolidaysResponse).safeParse(data);
-    if (parsed.error) {
-        const pretty = z.prettifyError(parsed.error);
-        console.error("Response:", data);
-        console.error("Failed to parse response:", pretty);
-        throw new Error("Invalid response format");
-    }
+  if (!response.ok) {
+    throw new Error(`Failed to fetch holidays: ${response.statusText}`);
+  }
 
-    return parsed.data;
+  const data = await response.json();
+  const parsed = z.array(HolidaysResponse).safeParse(data);
+  if (parsed.error) {
+    const pretty = z.prettifyError(parsed.error);
+    console.error("Response:", data);
+    console.error("Failed to parse response:", pretty);
+    throw new Error("Invalid response format");
+  }
+
+  return parsed.data;
 }
 
-function _isDayOff(date: Date, holidays: (typeof HolidaysResponse)[], requests: (typeof HolidaysResponse)[]): boolean {
-    // Check if date is saturday or sunday
-    const day = date.getDay();
-    if (day === 0 || day === 6) {
-        return true;
-    }
+export function _isDayOff(
+  date: Date,
+  holidays: z.infer<typeof HolidaysResponse>[],
+  requests: z.infer<typeof RequestsResponse>[]
+): boolean {
+  // Weekend check
+  const weekday = date.getDay();
+  if (weekday === 0 || weekday === 6) {
+    return true;
+  }
 
+  // Holiday check - use some() for early return
+  if (holidays.some(holiday => isSameDay(date, holiday.Date))) {
+    return true;
+  }
 
+  // Absence request check - use some() for early return
+  return requests.some(request =>
+    !request.IsPresence &&
+    date >= request.StartDate &&
+    date <= request.EndDate
+  );
+}
 
-    return false;
+export function isSameDay(date1: Date, date2: Date): boolean {
+  return date1.getFullYear() === date2.getFullYear() &&
+         date1.getMonth() === date2.getMonth() &&
+         date1.getDate() === date2.getDate();
 }
