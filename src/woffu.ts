@@ -1,15 +1,10 @@
 import { assert } from "tsafe";
 import z from "zod";
 
-// type-safe company
-export class Company {
-  constructor(public name: string) {}
-}
-
-export function companyFromEnv(): Company {
+export function companyFromEnv(): string {
   const company = process.env["WOFFU_COMPANY"];
   assert(company, "WOFFU_COMPANY is not set");
-  return new Company(company);
+  return company;
 }
 
 export class Credentials {
@@ -29,17 +24,14 @@ export function credentialsFromEnv(): Credentials {
   return new Credentials(email, password);
 }
 
-export async function login(
-  cred: Credentials,
-  company: Company
-): Promise<Auth> {
+export async function login(cred: Credentials, company: string): Promise<Auth> {
   const params = new URLSearchParams({
     grant_type: "password",
     username: cred.email,
     password: cred.password,
   });
 
-  const response = await fetch(`https://${company.name}.woffu.com/token`, {
+  const response = await fetch(`https://${company}.woffu.com/token`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -56,6 +48,7 @@ export async function login(
   assert(typeof token === "string", "access_token is not a string");
   return {
     token,
+    company,
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -65,6 +58,7 @@ export async function login(
 export interface Auth {
   token: string;
   headers: Record<string, string>;
+  company: string;
 }
 
 function parseWoffuDate(dateString: string): Date {
@@ -83,9 +77,9 @@ export const RequestsResponse = z.object({
   IsPresence: z.boolean(),
 });
 
-async function fetchWoffuRequests(auth: Auth, company: Company) {
+async function fetchWoffuRequests(auth: Auth) {
   const response = await fetch(
-    `https://${company.name}.woffu.com/api/users/requests/list?pageIndex=0&pageSize=10&statusType=null`,
+    `https://${auth.company}.woffu.com/api/users/requests/list?pageIndex=0&pageSize=10&statusType=null`,
     {
       method: "GET",
       headers: {
@@ -115,9 +109,9 @@ const HolidaysResponse = z.object({
   Name: z.string(),
 });
 
-export async function fetchWoffuHolidays(auth: Auth, company: Company) {
+export async function fetchWoffuHolidays(auth: Auth) {
   const response = await fetch(
-    `https://${company.name}.woffu.com/api/users/calendar-events/next`,
+    `https://${auth.company}.woffu.com/api/users/calendar-events/next`,
     {
       method: "GET",
       headers: {
@@ -154,20 +148,34 @@ export function _isDayOff(
   }
 
   // Holiday check - use some() for early return
-  if (holidays.some(holiday => isSameDay(date, holiday.Date))) {
+  if (holidays.some((holiday) => isSameDay(date, holiday.Date))) {
     return true;
   }
 
   // Absence request check - use some() for early return
-  return requests.some(request =>
-    !request.IsPresence &&
-    date >= request.StartDate &&
-    date <= request.EndDate
+  return requests.some(
+    (request) =>
+      !request.IsPresence &&
+      date >= request.StartDate &&
+      date <= request.EndDate
   );
 }
 
 export function isSameDay(date1: Date, date2: Date): boolean {
-  return date1.getFullYear() === date2.getFullYear() &&
-         date1.getMonth() === date2.getMonth() &&
-         date1.getDate() === date2.getDate();
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}
+
+export async function isDayOff(auth: Auth) {
+    const now = new Date();
+
+    const [holidays, requests] = await Promise.all([
+        fetchWoffuHolidays(auth),
+        fetchWoffuRequests(auth),
+    ]);
+
+    return _isDayOff(now, holidays, requests);
 }
