@@ -1,14 +1,9 @@
 {
   "name": "auto-woffu",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
     "build": "rolldown -c"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "module",
   "devDependencies": {
     "@eslint/js": "^9.35.0",
