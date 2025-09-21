@@ -1,6 +1,6 @@
 variable "tag" {
   type    = string
-  default = "ghcr.io/viperml/auto-woffu"
+  default = "ghcr.io/viperml/auto-woffu:f0800cc9c862ca61edf4b6db4fa397259637e1b0"
 }
 
 job "auto-woffu" {
@@ -10,16 +10,13 @@ job "auto-woffu" {
     task "main" {
       driver = "docker"
 
-      config {
-        image = var.tag
-      }
-
       resources {
         cpu    = 100
         memory = 64
       }
 
       config {
+        image = var.tag
         mounts = [
           {
             type   = "volume"
@@ -29,12 +26,13 @@ job "auto-woffu" {
         ]
       }
 
-      templater {
-        data        = <<EOF
-          {{ file "/mnt/env" }}
-        EOF
-        destination = "env"
-      }
+      # template {
+      #   data        = <<EOF
+      #     {{ file "/mnt/env" }}
+      #   EOF
+      #   destination = "secrets/env"
+      #   env         = true
+      # }
     }
   }
 }

@@ -14,6 +14,7 @@ lib.fix (self: {
       pkgs.nodejs
       pnpm
       pkgs.hclfmt
+      pkgs.nomad
     ];
   };
 
@@ -25,6 +26,12 @@ lib.fix (self: {
       # pkgs.npmHooks.npmInstallHook
       pkgs.makeWrapper
     ];
+
+    buildPhase = ''
+      runHook preBuild
+      pnpm run build
+      runHook postBuild
+    '';
 
     installPhase = ''
       runHook preInstall
