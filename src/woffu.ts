@@ -24,6 +24,10 @@ export function credentialsFromEnv(): Credentials {
     return new Credentials(email, password);
 }
 
+const UA = {
+    "User-Agent": navigator.userAgent
+};
+
 export async function login(cred: Credentials, company: string): Promise<Auth> {
     const params = new URLSearchParams({
         grant_type: "password",
@@ -34,7 +38,8 @@ export async function login(cred: Credentials, company: string): Promise<Auth> {
     const response = await fetch(`https://${company}.woffu.com/token`, {
         method: "POST",
         headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
+            "Content-Type": "application/x-www-form-urlencoded",
+            ...UA
         },
         body: params
     });
@@ -83,7 +88,8 @@ async function fetchWoffuRequests(auth: Auth) {
         {
             method: "GET",
             headers: {
-                ...auth.headers
+                ...auth.headers,
+                ...UA
             }
         }
     );
@@ -115,7 +121,8 @@ export async function fetchWoffuHolidays(auth: Auth) {
         {
             method: "GET",
             headers: {
-                ...auth.headers
+                ...auth.headers,
+                ...UA
             }
         }
     );
@@ -202,7 +209,8 @@ export async function check(auth: Auth, kind: CheckKind) {
         }),
         headers: {
             "Content-Type": "application/json",
-            ...auth.headers
+            ...auth.headers,
+            ...UA
         }
     });
 
