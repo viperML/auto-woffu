@@ -1,25 +1,29 @@
 {
-  "name": "auto-woffu",
-  "version": "1.0.0",
-  "scripts": {
-    "build": "rolldown -c",
-    "test": "vitest run"
-  },
-  "type": "module",
-  "devDependencies": {
-    "@eslint/js": "^9.35.0",
-    "@tsconfig/strictest": "^2.0.5",
-    "eslint": "^9.35.0",
-    "prettier": "^3.6.2",
-    "rolldown": "1.0.0-beta.38",
-    "tslib": "^2.8.1",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.44.0",
-    "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "@types/node": "^24.5.1",
-    "tsafe": "^1.8.10",
-    "zod": "^4.1.11"
-  }
+    "name": "auto-woffu",
+    "version": "1.0.0",
+    "scripts": {
+        "build": "rolldown -c",
+        "test": "vitest run",
+        "format": "prettier --write ."
+    },
+    "type": "module",
+    "devDependencies": {
+        "@eslint/js": "^9.35.0",
+        "@tsconfig/strictest": "^2.0.5",
+        "eslint": "^9.35.0",
+        "prettier": "^3.6.2",
+        "rolldown": "1.0.0-beta.38",
+        "tslib": "^2.8.1",
+        "typescript": "^5.9.2",
+        "typescript-eslint": "^8.44.0",
+        "vitest": "^3.2.4"
+    },
+    "dependencies": {
+        "@commander-js/extra-typings": "^14.0.0",
+        "@types/node": "^24.5.1",
+        "commander": "^14.0.1",
+        "cron": "^4.3.3",
+        "tsafe": "^1.8.10",
+        "zod": "^4.1.11"
+    }
 }
