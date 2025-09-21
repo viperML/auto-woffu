@@ -48,30 +48,38 @@ program.command("checkout").action(async () => {
 
 program.command("run").action(async () => {
     // Everyday at 4:40PM
-    const jobOut = new CronJob("0 40 16 * * *", async () => {
-        const auth = await Woffu.login(cred, company);
-        await Woffu.check(auth, Woffu.CheckOut);
-        log("Checked out");
+    const jobOut = CronJob.from({
+        cronTime: "0 40 16 * * *",
+        onTick: async () => {
+            const auth = await Woffu.login(cred, company);
+            await Woffu.check(auth, Woffu.CheckOut);
+            log("Checked out");
+        },
+        timeZone: "Europe/Madrid"
     });
 
     // Every weekday at 8:30AM
-    const jobIn = new CronJob("0 30 8 * * *", async () => {
-        const auth = await Woffu.login(cred, company);
-        const isDayOff = await Woffu.isDayOff(auth);
-        if (isDayOff) {
-            log("Day off, not checking in");
-            return;
-        } else {
-            const weekDay = new Date().getDay();
-            const kind =
-                weekDay === 1 || weekDay === 3 || weekDay === 5
-                    ? Woffu.CheckInHome
-                    : Woffu.CheckInOffice;
-            await Woffu.check(auth, kind);
-            log(
-                `Checked in at ${kind === Woffu.CheckInHome ? "home" : "office"}`
-            );
-        }
+    const jobIn = CronJob.from({
+        cronTime: "0 30 8 * * *",
+        onTick: async () => {
+            const auth = await Woffu.login(cred, company);
+            const isDayOff = await Woffu.isDayOff(auth);
+            if (isDayOff) {
+                log("Day off, not checking in");
+                return;
+            } else {
+                const weekDay = new Date().getDay();
+                const kind =
+                    weekDay === 1 || weekDay === 3 || weekDay === 5
+                        ? Woffu.CheckInHome
+                        : Woffu.CheckInOffice;
+                await Woffu.check(auth, kind);
+                log(
+                    `Checked in at ${kind === Woffu.CheckInHome ? "home" : "office"}`
+                );
+            }
+        },
+        timeZone: "Europe/Madrid"
     });
 
     jobIn.start();
