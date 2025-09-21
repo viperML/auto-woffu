@@ -29,7 +29,7 @@ job "auto-woffu" {
       }
 
       env {
-        WOFFU_ENV_FILE = "/mnt/env"
+        AUTOWOFFU_ENV_FILE = "/mnt/env"
       }
     }
   }

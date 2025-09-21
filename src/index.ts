@@ -8,7 +8,7 @@ function log(...message: unknown[]) {
     console.log(`[${new Date().toISOString()}]`, ...message);
 }
 
-const envFile = process.env["WOFFU_ENV_FILE"];
+const envFile = process.env["AUTOWOFFU_ENV_FILE"];
 if (envFile) {
     // Read and parse line-by-line
     const fileContent = await fs.promises.readFile(envFile, "utf-8");
@@ -27,6 +27,19 @@ if (envFile) {
 
 const company = Woffu.companyFromEnv();
 const cred = Woffu.credentialsFromEnv();
+const webhookUrl = process.env["DISCORD_WEBHOOK_URL"];
+assert(webhookUrl, "Missing DISCORD_WEBHOOK_URL env variable");
+
+async function postToDiscord(url: string, message: string) {
+    // Simple post message to discord webhook
+    await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ content: message })
+    });
+}
 
 program.command("checkin-home").action(async () => {
     const auth = await Woffu.login(cred, company);
@@ -54,6 +67,7 @@ program.command("run").action(async () => {
             const auth = await Woffu.login(cred, company);
             await Woffu.check(auth, Woffu.CheckOut);
             log("Checked out");
+            postToDiscord(webhookUrl, "⏳ Checked out");
         },
         timeZone: "Europe/Madrid"
     });
@@ -76,6 +90,10 @@ program.command("run").action(async () => {
                 await Woffu.check(auth, kind);
                 log(
                     `Checked in at ${kind === Woffu.CheckInHome ? "home" : "office"}`
+                );
+                postToDiscord(
+                    webhookUrl,
+                    `✅ Checked in at ${kind === Woffu.CheckInHome ? "home" : "office"}`
                 );
             }
         },
