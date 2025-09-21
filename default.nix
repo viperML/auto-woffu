@@ -2,7 +2,7 @@ let
   sources = import ./npins;
   pkgs = import sources.nixpkgs { };
   inherit (pkgs) lib;
-  src = lib.cleanSource ./.;
+  src = pkgs.nix-gitignore.gitignoreSource [ ] (lib.cleanSource ./.);
   pnpm = pkgs.pnpm_10;
   package-json = builtins.fromJSON (builtins.readFile ./package.json);
   pname = package-json.name;
@@ -11,7 +11,7 @@ in
 lib.fix (self: {
   shell = pkgs.mkShellNoCC {
     packages = [
-      pkgs.nodejs
+      (pkgs.nodejs.override {enableNpm = false;})
       pnpm
       pkgs.hclfmt
       pkgs.nomad
@@ -43,7 +43,7 @@ lib.fix (self: {
       makeWrapper ${lib.getExe pkgs.nodejs} $out/bin/${pname} \
         --prefix NODE_PATH : "$out/opt/${pname}/node_modules" \
         --inherit-argv0 \
-        --add-flags "$out/opt/${pname}/dist/index.js"
+        --add-flag "$out/opt/${pname}/dist/index.js"
 
       runHook postInstall
     '';

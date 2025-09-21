@@ -1,13 +1,32 @@
 import { program } from "@commander-js/extra-typings";
 import { CronJob } from "cron";
 import * as Woffu from "./woffu.js";
-
-const company = Woffu.companyFromEnv();
-const cred = Woffu.credentialsFromEnv();
+import fs from "node:fs";
+import { assert } from "tsafe";
 
 function log(...message: unknown[]) {
     console.log(`[${new Date().toISOString()}]`, ...message);
 }
+
+const envFile = process.env["WOFFU_ENV_FILE"];
+if (envFile) {
+    // Read and parse line-by-line
+    const fileContent = await fs.promises.readFile(envFile, "utf-8");
+    const lines = fileContent.split("\n");
+    for (const line of lines) {
+        // Skip if line doesnt contain =
+        if (!line.includes("=")) continue;
+        const [key, value] = line.split("=");
+        assert(key, "Missing key");
+        assert(value, "Missing value");
+        process.env[key] = value;
+    }
+} else {
+    log("No .env file specified, using environment variables");
+}
+
+const company = Woffu.companyFromEnv();
+const cred = Woffu.credentialsFromEnv();
 
 program.command("checkin-home").action(async () => {
     const auth = await Woffu.login(cred, company);

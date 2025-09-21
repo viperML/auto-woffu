@@ -1,6 +1,6 @@
 variable "tag" {
   type    = string
-  default = "ghcr.io/viperml/auto-woffu:f0800cc9c862ca61edf4b6db4fa397259637e1b0"
+  default = "ghcr.io/viperml/auto-woffu:553e0001e9382e655c323513888eed566a49bc7b"
 }
 
 job "auto-woffu" {
@@ -17,6 +17,7 @@ job "auto-woffu" {
 
       config {
         image = var.tag
+        command = "run"
         mounts = [
           {
             type   = "volume"
@@ -26,13 +27,9 @@ job "auto-woffu" {
         ]
       }
 
-      # template {
-      #   data        = <<EOF
-      #     {{ file "/mnt/env" }}
-      #   EOF
-      #   destination = "secrets/env"
-      #   env         = true
-      # }
+      env {
+        WOFFU_ENV_FILE = "/mnt/env"
+      }
     }
   }
 }
