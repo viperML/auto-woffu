@@ -1,6 +1,6 @@
 variable "tag" {
   type    = string
-  default = "ghcr.io/viperml/auto-woffu:553e0001e9382e655c323513888eed566a49bc7b"
+  default = "ghcr.io/viperml/auto-woffu"
 }
 
 job "auto-woffu" {
@@ -16,8 +16,9 @@ job "auto-woffu" {
       }
 
       config {
-        image = var.tag
-        command = "run"
+        image   = var.tag
+        command = "auto-woffu"
+        args    = ["run"]
         mounts = [
           {
             type   = "volume"

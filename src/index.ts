@@ -76,6 +76,10 @@ program.command("run").action(async () => {
 
     jobIn.start();
     jobOut.start();
+
+    log("Auto woffu started");
+    log("Next run for jobIn:", jobIn.nextDate());
+    log("Next run for jobOut:", jobOut.nextDate());
 });
 
 program.parse();
