@@ -18,6 +18,23 @@ job "auto-woffu" {
         cpu    = 100
         memory = 64
       }
+
+      config {
+        mounts = [
+          {
+            type   = "volume"
+            target = "/mnt"
+            source = "woffu"
+          }
+        ]
+      }
+
+      templater {
+        data        = <<EOF
+          {{ file "/mnt/env" }}
+        EOF
+        destination = "env"
+      }
     }
   }
 }

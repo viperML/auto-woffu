@@ -1,0 +1,21 @@
+name: ci
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  main:
+    uses: viperML/neoinfra/.github/workflows/deploy.yaml@master
+    permissions:
+      packages: write
+    with:
+      installable: -f ./default.nix streamImage
+      nomad_file: ./app.nomad
+      nix_docker_tag: auto-woffu:latest
+    secrets:
+      ts_oauth_client_id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+      ts_oauth_client_secret: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
+      nomad_token: ${{ secrets.NOMAD_TOKEN }}
