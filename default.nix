@@ -11,7 +11,7 @@ in
 lib.fix (self: {
   shell = pkgs.mkShellNoCC {
     packages = [
-      (pkgs.nodejs.override {enableNpm = false;})
+      (pkgs.nodejs.override { enableNpm = false; })
       pnpm
       pkgs.hclfmt
       pkgs.nomad
@@ -62,7 +62,10 @@ lib.fix (self: {
   streamImage = pkgs.dockerTools.streamLayeredImage {
     name = pname;
     tag = "latest";
-    contents = [ self.package ];
+    contents = [
+      self.package
+      pkgs.dockerTools.caCertificates
+    ];
     config = {
       Cmd = [ "/bin/auto-woffu" ];
       Env = [ "NODE_ENV=production" ];
