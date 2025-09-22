@@ -1,5 +1,6 @@
 import { assert } from "tsafe";
-import z from "zod";
+import { z } from "zod";
+import { log } from "./log.js";
 
 export function companyFromEnv(): string {
     const company = process.env["WOFFU_COMPANY"];
@@ -187,6 +188,50 @@ export async function isDayOff(auth: Auth) {
     return _isDayOff(now, holidays, requests);
 }
 
+const WoffuSign = z.object({
+    SignId: z.number(),
+    SignIn: z.boolean()
+    // AgreementEventId: z.union([z.boolean(), z.null()])
+});
+
+export async function isSigned(auth: Auth): Promise<boolean> {
+    const response = await fetch(
+        `https://${auth.company}.woffu.com/api/signs`,
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                ...auth.headers,
+                ...UA
+            }
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch signs: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const parsed = z.array(WoffuSign).safeParse(data);
+
+    if (parsed.error) {
+        const pretty = z.prettifyError(parsed.error);
+        console.error("Response:", data);
+        console.error("Failed to parse response:", pretty);
+        throw new Error("Invalid response format");
+    }
+
+    // Check last array elem
+    const signs = parsed.data;
+    if (signs.length === 0) {
+        return false;
+    }
+
+    const lastSign = signs.at(-1);
+    assert(lastSign !== undefined);
+    return lastSign.SignIn;
+}
+
 export const CheckInHome = 839447;
 export const CheckOut = null;
 export const CheckInOffice = 913100;
@@ -197,22 +242,37 @@ export type CheckKind =
     | typeof CheckInOffice;
 
 export async function check(auth: Auth, kind: CheckKind) {
-    const response = await fetch("https://bsc.woffu.com/api/svc/signs/signs", {
-        method: "POST",
-        body: JSON.stringify({
-            agreementEventId: kind,
-            requestId: null,
-            deviceId: "WebApp",
-            latitude: null,
-            longitude: null,
-            timezoneOffset: new Date().getTimezoneOffset()
-        }),
-        headers: {
-            "Content-Type": "application/json",
-            ...auth.headers,
-            ...UA
+    const _isSigned = await isSigned(auth);
+
+    if (kind === CheckOut && !_isSigned) {
+        log("Already signed out, skipping");
+        return;
+    }
+
+    if (kind !== CheckOut && _isSigned) {
+        log("Already signed in, skipping");
+        return;
+    }
+
+    const response = await fetch(
+        `https://${auth.company}.woffu.com/api/svc/signs/signs`,
+        {
+            method: "POST",
+            body: JSON.stringify({
+                agreementEventId: kind,
+                requestId: null,
+                deviceId: "WebApp",
+                latitude: null,
+                longitude: null,
+                timezoneOffset: new Date().getTimezoneOffset()
+            }),
+            headers: {
+                "Content-Type": "application/json",
+                ...auth.headers,
+                ...UA
+            }
         }
-    });
+    );
 
     if (!response.ok) {
         throw new Error(`Failed to check in: ${response.statusText}`);

@@ -3,10 +3,7 @@ import { CronJob } from "cron";
 import * as Woffu from "./woffu.js";
 import fs from "node:fs";
 import { assert } from "tsafe";
-
-function log(...message: unknown[]) {
-    console.log(`[${new Date().toISOString()}]`, ...message);
-}
+import { log } from "./log.js";
 
 const envFile = process.env["AUTOWOFFU_ENV_FILE"];
 if (envFile) {
