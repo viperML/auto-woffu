@@ -57,9 +57,9 @@ program.command("checkout").action(async () => {
 });
 
 program.command("run").action(async () => {
-    // Everyday at 4:40PM
+    // Everyday at 4:01PM
     const jobOut = CronJob.from({
-        cronTime: "0 40 16 * * *",
+        cronTime: "0 01 16 * * *",
         onTick: async () => {
             const auth = await Woffu.login(cred, company);
             await Woffu.check(auth, Woffu.CheckOut);
