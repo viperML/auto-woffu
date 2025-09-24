@@ -62,9 +62,12 @@ program.command("run").action(async () => {
         cronTime: "0 01 16 * * *",
         onTick: async () => {
             const auth = await Woffu.login(cred, company);
-            await Woffu.check(auth, Woffu.CheckOut);
-            log("Checked out");
-            postToDiscord(webhookUrl, "⏳ Checked out");
+            const isDayOff = await Woffu.isDayOff(auth);
+            if (!isDayOff) {
+                await Woffu.check(auth, Woffu.CheckOut);
+                log("Checked out");
+                postToDiscord(webhookUrl, "⏳ Checked out");
+            }
         },
         timeZone: "Europe/Madrid"
     });
