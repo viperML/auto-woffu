@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/woffu-config.schema.json",
+  "title": "Woffu Configuration",
+  "description": "Configuration schema for auto-woffu application",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference",
+      "format": "uri"
+    },
+    "company": {
+      "type": "string",
+      "description": "Company identifier",
+      "minLength": 1
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "User email address for authentication"
+    },
+    "password": {
+      "type": "string",
+      "description": "User password for authentication",
+      "minLength": 1
+    },
+    "schedule": {
+      "type": "array",
+      "description": "Array of scheduled check-in/check-out events",
+      "items": {
+        "type": "object",
+        "properties": {
+          "cron": {
+            "type": "string",
+            "description": "Cron expression defining when the event should trigger"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["checkin-office", "checkin-home", "checkout"],
+            "description": "Type of event: checkin-office, checkin-home, or checkout"
+          }
+        },
+        "required": ["cron", "kind"],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    }
+  },
+  "required": ["company", "email", "password", "schedule"],
+  "additionalProperties": false
+}
