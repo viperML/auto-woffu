@@ -1,3 +1,4 @@
 export function log(...message: unknown[]) {
-    console.log(`[${new Date().toISOString()}]`, ...message);
+    const date = new Date().toISOString();
+    console.log(`[${date}]`, ...message);
 }
