@@ -47,6 +47,7 @@ const ConfigFile = z
                         })
                 })
             )
+            .optional()
             .meta({
                 title: "Scheduled actions"
             }),

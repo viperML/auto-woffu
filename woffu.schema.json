@@ -60,8 +60,7 @@
   "required": [
     "company",
     "email",
-    "password",
-    "schedule"
+    "password"
   ],
   "additionalProperties": false
 }
