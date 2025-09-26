@@ -85,8 +85,8 @@ program.command("run").action(async () => {
                 const weekDay = new Date().getDay();
                 const kind =
                     weekDay === 1 || weekDay === 3 || weekDay === 5
-                        ? Woffu.CheckInHome
-                        : Woffu.CheckInOffice;
+                        ? Woffu.CheckInOffice
+                        : Woffu.CheckInHome;
                 await Woffu.check(auth, kind);
                 log(
                     `Checked in at ${kind === Woffu.CheckInHome ? "home" : "office"}`
